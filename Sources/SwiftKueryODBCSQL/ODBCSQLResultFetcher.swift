@@ -23,6 +23,8 @@ import Dispatch
 
 /// An implementation of query result fetcher.
 public class ODBCSQLResultFetcher: ResultFetcher {
+   
+    private var cols: [ODBCColumn]?
     private var titles: [String]?
     private var row: [Any?]?
 private let MAX_DATA = 100
@@ -105,6 +107,58 @@ private let MAX_DATA = 100
         return nil
     }
     
+    
+    private static func coldef(hstmt:HSTMT!,col:Int) ->ODBCColumn
+    {
+        let bufferlength:Int=1000
+        var namelength:Int16! = 0
+        var datatype:Int16! = 0
+        var colsize:UInt! = 0
+        var decimaldigts:Int16! = 0
+        var nullable:Int16! = 0
+        var nullablebool:Bool = false
+        
+        // Todo put MAX_DATA back
+        let sqlPointer = UnsafeMutablePointer<UInt8>.allocate(capacity: 1000)
+        
+        var rc = CunixODBC.SQLDescribeCol(
+            hstmt
+            ,UInt16(col+1)
+            ,sqlPointer
+            ,SQLSMALLINT(bufferlength)
+            ,&namelength
+            ,&datatype
+            ,&colsize
+            ,&decimaldigts
+            , &nullable)
+        
+        
+        // Todo error handler
+        /*
+         if !MYSQLSUCCESS(rc)    {
+         error_out(hstmt: hstmt)
+         return nil
+         }*/
+        
+        nullablebool = nullable == 1
+        
+        let sqlData = Data(bytes: sqlPointer, count: Int(namelength))
+        sqlPointer.deallocate()
+ 
+        var name=""
+        if let data = String(data: sqlData, encoding: .utf8)    {
+            name = data
+        }
+        let col=ODBCColumn()
+        col.Name=name
+        col.Colsize = colsize
+        col.Datatype = datatype
+        col.Decimaldigts = decimaldigts
+        col.Nullable = nullablebool
+        return col
+    }
+    
+    
     internal static func create(hstmt:HSTMT!,  callback: (ODBCSQLResultFetcher) ->()) {
         let resultFetcher = ODBCSQLResultFetcher()
         resultFetcher.hstmt = hstmt
@@ -123,13 +177,17 @@ private let MAX_DATA = 100
         
         
         var columnNames = [String]()
+        var cols = [ODBCColumn]()
         for column in 0 ..< columns {
-            if let colname = colname(hstmt:hstmt,col:Int(column))    {
-                columnNames.append(colname)
+            let coldefinition = coldef(hstmt:hstmt,col:Int(column))
+            cols.append(coldefinition)
+            columnNames.append(coldefinition.Name)
                // print("*** "+colname)
-            }
         }
+        
+        resultFetcher.cols = cols
         resultFetcher.titles = columnNames
+        
         resultFetcher.row = resultFetcher.buildRow()
         callback(resultFetcher)
     }
@@ -137,8 +195,8 @@ private let MAX_DATA = 100
     private func buildRow() -> [Any?] {
         
         var row = [Any?]()
-         var cbData:Int! = 0  // Output length of data
-        var columns:Int = (titles?.count)!
+        var cbData:Int! = 0  // Output length of data
+        let columns:Int = (titles?.count)!
         
         for i in 0..<columns    {
             let sqlPointer = UnsafeMutablePointer<UInt8>.allocate(capacity: MAX_DATA)

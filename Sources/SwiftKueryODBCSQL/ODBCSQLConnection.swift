@@ -146,40 +146,14 @@ public class ODBCSQLConnection: Connection {
     
     private func processQueryResult(hstmt:HSTMT!, query: String, onCompletion: @escaping ((QueryResult) -> ())) {
         
-        var rc:SQLRETURN = SQLRETURN(SQL_SUCCESS)
         
-        rc = SQLFetch(hstmt)
+        var rc = SQLFetch(hstmt)
         // Todo need an initial check, I think
-        
+// Todo bail if we have a problem, and free the hstmt
         ODBCSQLResultFetcher.create(hstmt:hstmt) { resultFetcher in
             self.currentResultFetcher = resultFetcher
             runCompletionHandler(.resultSet(ResultSet(resultFetcher, connection: self)), onCompletion: onCompletion)
         }
-        
-        
-        //SQLFreeStmt(hstmt,SQLUSMALLINT(SQL_DROP));
-        
-       //runCompletionHandler(.successNoData, onCompletion: onCompletion)
-
-        /*let status = PQresultStatus(result)
-        if status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK {
-            // Since we set the single row mode, PGRES_TUPLES_OK means the result is empty, i.e. there are
-            // no rows to return.
-            clearResult(result, connection: self)
-            runCompletionHandler(.successNoData, onCompletion: onCompletion)
-        }
-        else if status == PGRES_SINGLE_TUPLE {
-            PostgreSQLResultFetcher.create(queryResult: result, connection: self) { resultFetcher in
-                self.setState(.fetchingResultSet)
-                self.currentResultFetcher = resultFetcher
-                runCompletionHandler(.resultSet(ResultSet(resultFetcher, connection: self)), onCompletion: onCompletion)
-            }
-        }
-        else {
-            let errorMessage = String(validatingUTF8: PQresultErrorMessage(result)) ?? "Unknown"
-            clearResult(result, connection: self)
-            runCompletionHandler(.error(QueryError.databaseError("Query execution error:\n" + errorMessage + " For query: " + query)), onCompletion: onCompletion)
-        }*/
     }
 
     
