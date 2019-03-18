@@ -106,12 +106,7 @@ private let MAX_DATA = 100
         if let data = String(data: sqlData, encoding: .utf8)    {
             name = data
         }
-        let col=ODBCColumn()
-        col.Name=name
-        col.Colsize = colsize
-        col.Datatype = datatype
-        col.Decimaldigts = decimaldigts
-        col.Nullable = nullablebool
+        let col = ODBCColumn(name, DataType: datatype, Colsize: colsize, Decimaldigits: decimaldigts, Nullable: nullablebool )
         return col
     }
     
@@ -175,35 +170,35 @@ private let MAX_DATA = 100
         if data.count == 0 { return nil }
         
         let ourcol = cols![column]
-        print("-- \(ourcol.Name) \(ourcol.Datatype)")
-        switch Int32(ourcol.Datatype)
+        //print("-- \(ourcol.Name) \(ourcol.Datatype)")
+        switch ourcol.Datatype
         {
-        case SQL_UNKNOWN_TYPE:// 0
+        case .SQL_UNKNOWN_TYPE:
             fallthrough
-        case SQL_CHAR: // 1
+        case .SQL_CHAR: // 1
             fallthrough
-        case SQL_NUMERIC ://  2
+        case .SQL_NUMERIC ://  2
             fallthrough
-        case SQL_DECIMAL://  3
+        case .SQL_DECIMAL://  3
             fallthrough
-        case SQL_INTEGER:// 4
-            
+        case .SQL_INTEGER:// 4
+    
             if let data = String(data: data, encoding: .utf8)    {
                 if let somenum:Int = Int(data) { return somenum }
             }
             return nil
           
-        case SQL_SMALLINT:// 5
+        case .SQL_SMALLINT:// 5
             fallthrough
-        case SQL_FLOAT://  6
+        case .SQL_FLOAT://  6
             fallthrough
-        case SQL_REAL:// 7
+        case .SQL_REAL:// 7
             fallthrough
-        case SQL_DOUBLE:// 8
+        case .SQL_DOUBLE:// 8
             fallthrough
-        case SQL_DATETIME:// 9
+        case .SQL_DATETIME:// 9
             fallthrough
-        case SQL_VARCHAR:// 12
+        case .SQL_VARCHAR:// 12
             fallthrough
         default:
             if let data = String(data: data, encoding: .utf8)    {

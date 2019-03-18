@@ -66,6 +66,12 @@ public class ODBCSQLConnection: Connection {
                 throw QueryError.syntaxError("Suffix for query already set, could not add Returning suffix")
             }
         }
+        
+        // Todo remember SQL server needs this to get a copy of the inserted record back
+        /*
+        INSERT INTO files (title) VALUES ('whatever');
+        SELECT * FROM files WHERE id = SCOPE_IDENTITY();
+        */
         return Query
     }
     
@@ -149,16 +155,13 @@ public class ODBCSQLConnection: Connection {
         
         var rc = SQLFetch(hstmt)
         // Todo need an initial check, I think
-// Todo bail if we have a problem, and free the hstmt
+        // Todo bail if we have a problem, and free the hstmt
         ODBCSQLResultFetcher.create(hstmt:hstmt) { resultFetcher in
             self.currentResultFetcher = resultFetcher
             runCompletionHandler(.resultSet(ResultSet(resultFetcher, connection: self)), onCompletion: onCompletion)
         }
     }
 
-    
-    
-    
     
     // MARK:Initilisation
     
@@ -296,13 +299,8 @@ public class ODBCSQLConnection: Connection {
         print("Disconnected")
     }
     
-    public var isConnected: Bool
-    {
-        get
-        {
-            return connection != nil
-            
-        }
+    public var isConnected: Bool    {
+        get { return connection != nil }
     }
     
     // MARK:Prepares
@@ -320,7 +318,7 @@ public class ODBCSQLConnection: Connection {
     }
     
     public func descriptionOf(query: Query) throws -> String {
-        return "OK"
+       return try query.build(queryBuilder: queryBuilder)
     }
     
     // MARK:Transactions
@@ -353,9 +351,7 @@ public class ODBCSQLConnection: Connection {
 
     private var henv:SQLHENV! // Environment
     private var hdbc:SQLHDBC! // Connection Handle
-   // private var szData:String! // Returned data storage
-   // private var cbData:Int! = 0 // Output length of data
-
+   
     private let MAX_DATA = 100
   
     private func odbcerror(_ rc:SQLRETURN,hstmt:HSTMT! = nil)-> String!
@@ -372,7 +368,7 @@ public class ODBCSQLConnection: Connection {
         var messagelength:SQLSMALLINT! = 0
         while SQLError(henv,hdbc,hstmt,&sqlstate,&nativeerror, messagetext,SQLSMALLINT(SQL_MAX_MESSAGE_LENGTH),&messagelength) == SQL_SUCCESS
         {
-            var line="Error: "
+            var line = "Error: "
             line += "State=\(sqlstate) "
             line += "Native Error=\(nativeerror) "
             
