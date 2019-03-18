@@ -28,6 +28,8 @@ public class ODBCSQLConnection: Connection {
     private var password:String = ""
     
     private var preparedStatements = Set<String>()
+    private weak var currentResultFetcher: ODBCSQLResultFetcher?
+    
     
     // MARK:Execute Handling
 
@@ -136,26 +138,24 @@ public class ODBCSQLConnection: Connection {
                     SQLFreeStmt(hstmt,SQLUSMALLINT(SQL_DROP));
                     return self.runCompletionHandler(.error(QueryError.databaseError(error)), onCompletion: onCompletion)
                 }
-                SQLFreeStmt(hstmt,SQLUSMALLINT(SQL_DROP));
                 
-                self.processQueryResult(query: torun, onCompletion: onCompletion)
-                //return self.runCompletionHandler(.successNoData, onCompletion: onCompletion)
+                self.processQueryResult(hstmt:hstmt, query: torun, onCompletion: onCompletion)
         }
     }
     
     
-    private func processQueryResult(query: String, onCompletion: @escaping ((QueryResult) -> ())) {
-        /*guard let result = PQgetResult(connection) else {
-            setState(.idle)
-            var errorMessage = "No result returned for query: \(query)."
-            if let error = String(validatingUTF8: PQerrorMessage(connection)) {
-                errorMessage += " Error: \(error)."
-            }
-            runCompletionHandler(.error(QueryError.noResult(errorMessage)), onCompletion: onCompletion)
-            return
-        }*/
-
-       runCompletionHandler(.successNoData, onCompletion: onCompletion)
+    private func processQueryResult(hstmt:HSTMT!, query: String, onCompletion: @escaping ((QueryResult) -> ())) {
+        
+        var rc:SQLRETURN = SQLRETURN(SQL_SUCCESS)
+        ODBCSQLResultFetcher.create(hstmt:hstmt) { resultFetcher in
+            self.currentResultFetcher = resultFetcher
+            runCompletionHandler(.resultSet(ResultSet(resultFetcher, connection: self)), onCompletion: onCompletion)
+        }
+        
+        
+        //SQLFreeStmt(hstmt,SQLUSMALLINT(SQL_DROP));
+        
+       //runCompletionHandler(.successNoData, onCompletion: onCompletion)
 
         /*let status = PQresultStatus(result)
         if status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK {
