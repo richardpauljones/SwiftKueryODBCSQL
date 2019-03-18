@@ -203,15 +203,20 @@ private let MAX_DATA = 100
             
             SQLGetData(hstmt, SQLUSMALLINT(i+1),SQLSMALLINT(SQL_C_CHAR),sqlPointer, MAX_DATA, &cbData)
             let sqlData = Data(bytes: sqlPointer, count: cbData)
-            if let data = String(data: sqlData, encoding: .utf8)    {
                 //  TODO - conversion requered
-                // row.append(PostgreSQLResultFetcher.convert(queryResult, row: 0, column: column))
-                
-                row.append(data)
-            }
+            row.append(ODBCSQLResultFetcher.convert(sqlData, column: i))
             sqlPointer.deallocate()
         }
+        
+        
         return row
+    }
+    private static func convert(_ data:Data, column:Int) -> Any
+    {
+        if let data = String(data: data, encoding: .utf8)    {
+            return data
+        }
+        return ""
     }
 }
 
