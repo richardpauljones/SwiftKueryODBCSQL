@@ -64,49 +64,6 @@ private let MAX_DATA = 100
         
     }
     
-    private static func colname(hstmt:HSTMT!,col:Int) ->String!
-    {
-        let bufferlength:Int=1000
-        var namelength:Int16! = 0
-        var datatype:Int16! = 0
-        var colsize:UInt! = 0
-        var decimaldigts:Int16! = 0
-        var nullable:Int16! = 0
-        var nullablebool:Bool = false
-        
-        // Todo put MAX_DATA back
-        let sqlPointer = UnsafeMutablePointer<UInt8>.allocate(capacity: 1000)
-        
-        var rc = CunixODBC.SQLDescribeCol(
-            hstmt
-            ,UInt16(col+1)
-            ,sqlPointer
-            ,SQLSMALLINT(bufferlength)
-            ,&namelength
-            ,&datatype
-            ,&colsize
-            ,&decimaldigts
-            , &nullable)
-        
-        
-        // Todo error handler
-        /*
-        if !MYSQLSUCCESS(rc)    {
-            error_out(hstmt: hstmt)
-            return nil
-        }*/
-        
-        nullablebool = nullable == 1
-        
-        let sqlData = Data(bytes: sqlPointer, count: Int(namelength))
-        sqlPointer.deallocate()
-        
-        if let data = String(data: sqlData, encoding: .utf8)    {
-           return data
-        }
-        return nil
-    }
-    
     
     private static func coldef(hstmt:HSTMT!,col:Int) ->ODBCColumn
     {
@@ -204,19 +161,56 @@ private let MAX_DATA = 100
             SQLGetData(hstmt, SQLUSMALLINT(i+1),SQLSMALLINT(SQL_C_CHAR),sqlPointer, MAX_DATA, &cbData)
             let sqlData = Data(bytes: sqlPointer, count: cbData)
                 //  TODO - conversion requered
-            row.append(ODBCSQLResultFetcher.convert(sqlData, column: i))
+            row.append(convert(sqlData, column: i))
             sqlPointer.deallocate()
         }
         
         
         return row
     }
-    private static func convert(_ data:Data, column:Int) -> Any
-    {
-        if let data = String(data: data, encoding: .utf8)    {
-            return data
+    private func convert(_ data:Data, column:Int) -> Any?   {
+        
+        // TODO - need to ensure this happens correctly
+        // nil handling
+        if data.count == 0 { return nil }
+        
+        let ourcol = cols![column]
+        print("-- \(ourcol.Name) \(ourcol.Datatype)")
+        switch Int32(ourcol.Datatype)
+        {
+        case SQL_UNKNOWN_TYPE:// 0
+            fallthrough
+        case SQL_CHAR: // 1
+            fallthrough
+        case SQL_NUMERIC ://  2
+            fallthrough
+        case SQL_DECIMAL://  3
+            fallthrough
+        case SQL_INTEGER:// 4
+            
+            if let data = String(data: data, encoding: .utf8)    {
+                if let somenum:Int = Int(data) { return somenum }
+            }
+            return nil
+          
+        case SQL_SMALLINT:// 5
+            fallthrough
+        case SQL_FLOAT://  6
+            fallthrough
+        case SQL_REAL:// 7
+            fallthrough
+        case SQL_DOUBLE:// 8
+            fallthrough
+        case SQL_DATETIME:// 9
+            fallthrough
+        case SQL_VARCHAR:// 12
+            fallthrough
+        default:
+            if let data = String(data: data, encoding: .utf8)    {
+                return data
+            }
         }
-        return ""
+        return nil
     }
 }
 

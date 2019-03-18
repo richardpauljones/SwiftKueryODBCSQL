@@ -13,10 +13,10 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-
+/*
 import XCTest
 import SwiftKuery
-/*
+
 @testable import SwiftKueryODBCSQL
 
 #if os(Linux)
@@ -194,7 +194,7 @@ class TestInsert: XCTestCase {
             }
         })
     }
-    
+ 
     func testInsertID() {
         let t3 = MyTable3()
         
@@ -239,4 +239,5 @@ class TestInsert: XCTestCase {
         })
     }
 }
+
 */
