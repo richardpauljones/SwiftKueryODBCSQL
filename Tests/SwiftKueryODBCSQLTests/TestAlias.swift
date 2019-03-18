@@ -65,6 +65,10 @@ class TestAlias: XCTestCase {
                             XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
 
                             let s1 = Select(t.a.as("\"fruit name\""), t.b.as("number"), from: t)
+                            
+                            // Got As Far as Here ---    Need to now get at results
+                            
+                            
                             executeQuery(query: s1, connection: connection) { result, rows in
                                 XCTAssertEqual(result.success, true, "SELECT failed")
                                 XCTAssertNotNil(result.asResultSet, "SELECT returned no rows")
