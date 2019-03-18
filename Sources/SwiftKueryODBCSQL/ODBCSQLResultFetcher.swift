@@ -24,10 +24,34 @@ import Dispatch
 /// An implementation of query result fetcher.
 public class ODBCSQLResultFetcher: ResultFetcher {
     private var titles: [String]?
+    private var row: [Any?]?
+private let MAX_DATA = 100
+    private var hstmt:HSTMT!
     
+    /// Fetch the next row of the query result. This function is non-blocking.
+    ///
+    /// - Parameter callback: A closure that accepts a tuple containing an optional array of values of type Any? representing the next row from the query result and an optional Error.
     
     public func fetchNext(callback: @escaping (([Any?]?, Error?)) -> ()) {
+        //print("Called FetchNext")
         
+            if let row = row {
+                self.row = nil
+                return callback((row, nil))
+            }
+        
+            DispatchQueue.global().async {
+                var rc = SQLFetch(self.hstmt)
+                if rc != SQL_SUCCESS {
+                    
+                    // no more rows
+                    SQLFreeStmt(self.hstmt,SQLUSMALLINT(SQL_DROP));
+                    print ("Clear Up - Fetcher")
+                    return callback((nil, nil))
+                }
+                
+                return callback((self.buildRow(), nil))
+            }
     }
     
     public func fetchTitles(callback: @escaping (([String]?, Error?)) -> ()) {
@@ -53,7 +77,7 @@ public class ODBCSQLResultFetcher: ResultFetcher {
         
         var rc = CunixODBC.SQLDescribeCol(
             hstmt
-            ,UInt16(col)
+            ,UInt16(col+1)
             ,sqlPointer
             ,SQLSMALLINT(bufferlength)
             ,&namelength
@@ -62,7 +86,6 @@ public class ODBCSQLResultFetcher: ResultFetcher {
             ,&decimaldigts
             , &nullable)
         
-        sqlPointer.deallocate()
         
         // Todo error handler
         /*
@@ -70,7 +93,12 @@ public class ODBCSQLResultFetcher: ResultFetcher {
             error_out(hstmt: hstmt)
             return nil
         }*/
+        
+        nullablebool = nullable == 1
+        
         let sqlData = Data(bytes: sqlPointer, count: Int(namelength))
+        sqlPointer.deallocate()
+        
         if let data = String(data: sqlData, encoding: .utf8)    {
            return data
         }
@@ -79,7 +107,7 @@ public class ODBCSQLResultFetcher: ResultFetcher {
     
     internal static func create(hstmt:HSTMT!,  callback: (ODBCSQLResultFetcher) ->()) {
         let resultFetcher = ODBCSQLResultFetcher()
-        
+        resultFetcher.hstmt = hstmt
         var columns:Int16=0
         // determine number of columns
         var rc = CunixODBC.SQLNumResultCols(hstmt,&columns)
@@ -98,19 +126,34 @@ public class ODBCSQLResultFetcher: ResultFetcher {
         for column in 0 ..< columns {
             if let colname = colname(hstmt:hstmt,col:Int(column))    {
                 columnNames.append(colname)
+               // print("*** "+colname)
             }
         }
         resultFetcher.titles = columnNames
-        
-        // free up
-        SQLFreeStmt(hstmt,SQLUSMALLINT(SQL_DROP));
-        
-        
-        // toto add back
-        //resultFetcher.row = resultFetcher.buildRow(queryResult: queryResult)
+        resultFetcher.row = resultFetcher.buildRow()
         callback(resultFetcher)
     }
     
-    
+    private func buildRow() -> [Any?] {
+        
+        var row = [Any?]()
+         var cbData:Int! = 0  // Output length of data
+        var columns:Int = (titles?.count)!
+        
+        for i in 0..<columns    {
+            let sqlPointer = UnsafeMutablePointer<UInt8>.allocate(capacity: MAX_DATA)
+            
+            SQLGetData(hstmt, SQLUSMALLINT(i+1),SQLSMALLINT(SQL_C_CHAR),sqlPointer, MAX_DATA, &cbData)
+            let sqlData = Data(bytes: sqlPointer, count: cbData)
+            if let data = String(data: sqlData, encoding: .utf8)    {
+                //  TODO - conversion requered
+                // row.append(PostgreSQLResultFetcher.convert(queryResult, row: 0, column: column))
+                
+                row.append(data)
+            }
+            sqlPointer.deallocate()
+        }
+        return row
+    }
 }
 

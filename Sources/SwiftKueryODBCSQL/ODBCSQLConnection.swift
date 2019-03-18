@@ -147,6 +147,10 @@ public class ODBCSQLConnection: Connection {
     private func processQueryResult(hstmt:HSTMT!, query: String, onCompletion: @escaping ((QueryResult) -> ())) {
         
         var rc:SQLRETURN = SQLRETURN(SQL_SUCCESS)
+        
+        rc = SQLFetch(hstmt)
+        // Todo need an initial check, I think
+        
         ODBCSQLResultFetcher.create(hstmt:hstmt) { resultFetcher in
             self.currentResultFetcher = resultFetcher
             runCompletionHandler(.resultSet(ResultSet(resultFetcher, connection: self)), onCompletion: onCompletion)
