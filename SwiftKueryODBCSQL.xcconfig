@@ -1,0 +1,2 @@
+HEADER_SEARCH_PATHS = /usr/local/Cellar/unixodbc/2.3.7/include
+LIBRARY_SEARCH_PATHS = /usr/local/Cellar/unixodbc/2.3.7/lib
