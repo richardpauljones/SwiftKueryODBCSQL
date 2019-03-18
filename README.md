@@ -8,7 +8,7 @@
 
 
 # Swift-Kuery-ODBCSQL
-
+This is very much a work in progress.   I am gradually adding support for all of the required classes to implement the full set of Kuery functionallity.   
 
 ## License
 This library is licensed under Apache 2.0. Full license text is available in [LICENSE](https://github.com/IBM-Swift/SwiftKueryPostgreSQL/blob/master/LICENSE.txt)
