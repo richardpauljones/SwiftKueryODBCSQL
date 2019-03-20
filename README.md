@@ -8,7 +8,30 @@
 
 
 # Swift-Kuery-ODBCSQL
-This is very much a work in progress.   I am gradually adding support for all of the required classes to implement the full set of Kuery functionallity.   
+This is very much a work in progress.   I am gradually adding support for all of the required classes to implement the full set of Kuery functionallity.
+
+# Usage
+
+Add dependencies
+
+Add the SwiftQueryODBC package to the dependencies within your application’s Package.swift file. Substitute "x.x.x" with the latest CunixODBC release.
+
+.package(url: "https://github.com/richardpauljones/SwiftQueryODBCSQL.git", from: "x.x.x")
+Add CunixODBC to your target's dependencies:
+
+.target(name: "example", dependencies: ["SwiftQueryODBCSQL"]),
+Import package
+
+import SwiftQueryODBCSQL
+Build and test linking
+
+You must have unixODBC installed on your machine:
+
+MacOS:
+brew install unixodbc
+Linux:
+apt-get install unixodbc-dev
+
 
 ## License
 This library is licensed under Apache 2.0. Full license text is available in [LICENSE](https://github.com/IBM-Swift/SwiftKueryPostgreSQL/blob/master/LICENSE.txt)
