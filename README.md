@@ -20,17 +20,17 @@ Add the SwiftQueryODBC package to the dependencies within your application’s P
 Add SwiftQueryODBCSQL to your target's dependencies:
 
 .target(name: "example", dependencies: ["SwiftQueryODBCSQL"]),
-Import package
+Import package</br>
 
-import SwiftQueryODBCSQL
-Build and test linking
-
-You must have unixODBC installed on your machine:
-
-MacOS:
-brew install unixodbc
-Linux:
-apt-get install unixodbc-dev
+import SwiftQueryODBCSQL</br>
+Build and test linking</br>
+</br>
+You must have unixODBC installed on your machine:</br>
+</br>
+MacOS:</br>
+brew install unixodbc</br>
+Linux:</br>
+apt-get install unixodbc-dev</br>
 
 # Thankyou
 
