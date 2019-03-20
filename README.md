@@ -35,9 +35,9 @@ apt-get install unixodbc-dev
 # Thankyou
 
 To the helpful guys at IBM
-Andrew Lees
-Matt Kilner
-Chris Bailey
+* Andrew Lees
+* Matt Kilner
+* Chris Bailey
 
 
 ## License
