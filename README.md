@@ -14,10 +14,10 @@ This is very much a work in progress.   I am gradually adding support for all of
 
 Add dependencies
 
-Add the SwiftQueryODBC package to the dependencies within your application’s Package.swift file. Substitute "x.x.x" with the latest CunixODBC release.
+Add the SwiftQueryODBC package to the dependencies within your application’s Package.swift file. Substitute "x.x.x" with the latest SwiftQueryODBCSQL release.
 
 .package(url: "https://github.com/richardpauljones/SwiftQueryODBCSQL.git", from: "x.x.x")
-Add CunixODBC to your target's dependencies:
+Add SwiftQueryODBCSQL to your target's dependencies:
 
 .target(name: "example", dependencies: ["SwiftQueryODBCSQL"]),
 Import package
@@ -31,6 +31,13 @@ MacOS:
 brew install unixodbc
 Linux:
 apt-get install unixodbc-dev
+
+# Thankyou
+
+To the helpful guys at IBM
+Andrew Lees
+Matt Kilner
+Chris Bailey
 
 
 ## License
