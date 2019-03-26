@@ -48,7 +48,7 @@ public class ODBCSQLConnection: Connection {
     
     public func execute(query: Query, parameters: [Any?], onCompletion: @escaping ((QueryResult) -> ())) {
         print("OK 4")
-    }
+     }
     
     private func buildQuery(_ query: Query) throws  -> String {
         // NOTE: The following call into SwiftKuery does not pack binary types
