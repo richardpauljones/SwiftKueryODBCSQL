@@ -117,7 +117,6 @@ private let MAX_DATA = 100
         var columns:Int16=0
         // determine number of columns
         var rc = CunixODBC.SQLNumResultCols(hstmt,&columns)
-
         // todo if there is a problem need to error out
         /*
         if !MYSQLSUCCESS(rc){
@@ -134,9 +133,9 @@ private let MAX_DATA = 100
             let coldefinition = coldef(hstmt:hstmt,col:Int(column))
             cols.append(coldefinition)
             columnNames.append(coldefinition.Name)
-               // print("*** "+colname)
+                print("*** "+coldefinition.Name)
         }
-        
+        print("In the titles bit")
         resultFetcher.cols = cols
         resultFetcher.titles = columnNames
         

@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-/*
+
 import XCTest
 import SwiftKuery
 
@@ -34,7 +34,7 @@ class TestInsert: XCTestCase {
     static var allTests: [(String, (TestInsert) -> () throws -> Void)] {
         return [
             ("testInsert", testInsert),
-            ("testInsertID", testInsertID)
+           // ("testInsertID", testInsertID)
         ]
     }
     
@@ -87,7 +87,11 @@ class TestInsert: XCTestCase {
                                     XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
                                     
                                     let i2 = Insert(into: t, valueTuples: (t.a, "apricot"), (t.b, "3"))
-                                        .suffix("RETURNING *")
+                                     //   .suffix("RETURNING *")  // postgres one removed
+                                       .suffix("; SELECT a,b FROM \(t.nameInQuery) WHERE b = SCOPE_IDENTITY()")
+                                    
+                                   // .suffix(" OUTPUT INSERTED.a, INSERTED.b")
+                                    
                                     executeQuery(query: i2, connection: connection) { result, rows in
                                         XCTAssertEqual(result.success, true, "INSERT failed")
                                         XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
@@ -194,7 +198,8 @@ class TestInsert: XCTestCase {
             }
         })
     }
- 
+}
+/*
     func testInsertID() {
         let t3 = MyTable3()
         
