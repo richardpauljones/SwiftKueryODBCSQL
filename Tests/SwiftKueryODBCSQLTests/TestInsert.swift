@@ -215,6 +215,7 @@ class TestInsert: XCTestCase {
                 }
                 cleanUp(table: t3.tableName, connection: connection) { result in
                  // postgres change
+                    
                     //   executeRawQuery("CREATE TABLE \"" +  t3.tableName + "\" (a SERIAL PRIMARY KEY, b integer)",
                        executeRawQuery("CREATE TABLE \"" +  t3.tableName + "\" (a integer IDENTITY(1,1), b integer)", 
                     connection: connection) { result, rows in
