@@ -58,7 +58,11 @@ public class ODBCSQLConnection: Connection {
             let columns = insertQuery.table.columns.filter { $0.isPrimaryKey && $0.autoIncrement }
             
             if (insertQuery.suffix == nil && columns.count == 1) {
-                let insertQueryReturnID = insertQuery.suffix("Returning " + columns[0].name)
+                
+                // change from postgres
+                // let insertQueryReturnID = insertQuery.suffix("Returning " + columns[0].name)
+                let insertQueryReturnID = insertQuery.beforevalues("OUTPUT INSERTED." + columns[0].name)
+                
                 Query = try insertQueryReturnID.build(queryBuilder: queryBuilder)
             }
             

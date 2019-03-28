@@ -183,7 +183,7 @@ private let MAX_DATA = 100
         case .SQL_INTEGER:// 4
     
             if let data = String(data: data, encoding: .utf8)    {
-                if let somenum:Int = Int(data) { return somenum }
+                if let somenum:Int32 = Int32(data) { return somenum }
             }
             return nil
           

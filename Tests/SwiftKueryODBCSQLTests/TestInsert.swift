@@ -34,7 +34,7 @@ class TestInsert: XCTestCase {
     static var allTests: [(String, (TestInsert) -> () throws -> Void)] {
         return [
             ("testInsert", testInsert),
-           // ("testInsertID", testInsertID)
+            ("testInsertID", testInsertID)
         ]
     }
     
@@ -88,11 +88,9 @@ class TestInsert: XCTestCase {
                                     
                                     let i2 = Insert(into: t, valueTuples: (t.a, "apricot"), (t.b, "3"))
                                      //   .suffix("RETURNING *")  // postgres one removed
-                                       .suffix("; SELECT a,b FROM \(t.nameInQuery) WHERE b = SCOPE_IDENTITY()")
+                                     .beforevalues("OUTPUT INSERTED.*")
                                     
-                                   // .suffix(" OUTPUT INSERTED.a, INSERTED.b")
-                                    
-                                    executeQuery(query: i2, connection: connection) { result, rows in
+                                        executeQuery(query: i2, connection: connection) { result, rows in
                                         XCTAssertEqual(result.success, true, "INSERT failed")
                                         XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
                                         XCTAssertNotNil(result.asResultSet, "INSERT returned no rows")
@@ -110,7 +108,8 @@ class TestInsert: XCTestCase {
                                             XCTAssertEqual(rows![0][1]! as! Int32, 3, "Wrong value in row 1 column 0")
                                             
                                             let i3 = Insert(into: t, columns: [t.a, t.b], values: ["banana", 17])
-                                                .suffix("RETURNING b")
+                                                // .suffix("RETURNING b") // removed from postgres
+                                            .beforevalues("OUTPUT inserted.b")
                                             executeQuery(query: i3, connection: connection) { result, rows in
                                                 XCTAssertEqual(result.success, true, "INSERT failed")
                                                 XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
@@ -128,7 +127,8 @@ class TestInsert: XCTestCase {
                                                     XCTAssertEqual(rows![0][0]! as! Int32, 17, "Wrong value in row 0 column 0")
                                                     
                                                     let i4 = Insert(into: t, rows: [["apple", 17], ["banana", -7], ["banana", 27]])
-                                                        .suffix("RETURNING b")
+                                                        //.suffix("RETURNING b") // removed from postgres
+                                                        .beforevalues("OUTPUT inserted.b")
                                                     executeQuery(query: i4, connection: connection) { result, rows in
                                                         XCTAssertEqual(result.success, true, "INSERT failed")
                                                         XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
@@ -137,7 +137,8 @@ class TestInsert: XCTestCase {
                                                         XCTAssertEqual(rows!.count, 3, "INSERT returned wrong number of rows: \(rows!.count) instead of 3")
                                                         
                                                         let i5 = Insert(into: t, rows: [["apple", 5], ["banana", 10], ["banana", 3]])
-                                                            .suffix("RETURNING b, a")
+                                                           // .suffix("RETURNING b, a")/ / removed from postgres
+                                                            .beforevalues("OUTPUT inserted.b, inserted.a")
                                                         executeQuery(query: i5, connection: connection) { result, rows in
                                                             XCTAssertEqual(result.success, true, "INSERT failed")
                                                             XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
@@ -153,7 +154,8 @@ class TestInsert: XCTestCase {
                                                                 XCTAssertEqual(titles.count, 2, "Wrong number of columns: \(titles.count) instead of 2")
                                                                 
                                                                 let i6 = Insert(into: t2, Select(from: t).where(t.a == "apple"))
-                                                                    .suffix("RETURNING *")
+                                                                    //.suffix("RETURNING *") // removed from postgres
+                                                                .beforevalues("OUTPUT INSERTED.*")
                                                                 executeQuery(query: i6, connection: connection) { result, rows in
                                                                     XCTAssertEqual(result.success, true, "INSERT failed")
                                                                     XCTAssertNil(result.asError, "Error in INSERT: \(result.asError!)")
@@ -198,8 +200,8 @@ class TestInsert: XCTestCase {
             }
         })
     }
-}
-/*
+
+
     func testInsertID() {
         let t3 = MyTable3()
         
@@ -212,7 +214,10 @@ class TestInsert: XCTestCase {
                     return
                 }
                 cleanUp(table: t3.tableName, connection: connection) { result in
-                    executeRawQuery("CREATE TABLE \"" +  t3.tableName + "\" (a SERIAL PRIMARY KEY, b integer)", connection: connection) { result, rows in
+                 // postgres change
+                    //   executeRawQuery("CREATE TABLE \"" +  t3.tableName + "\" (a SERIAL PRIMARY KEY, b integer)",
+                       executeRawQuery("CREATE TABLE \"" +  t3.tableName + "\" (a integer IDENTITY(1,1), b integer)", 
+                    connection: connection) { result, rows in
                         XCTAssertEqual(result.success, true, "CREATE TABLE failed")
                         XCTAssertNil(result.asError, "Error in CREATE TABLE: \(result.asError!)")
                         let i7 = Insert(into: t3, valueTuples: [(t3.b, 5)], returnID: true)
@@ -245,4 +250,4 @@ class TestInsert: XCTestCase {
     }
 }
 
-*/
+
