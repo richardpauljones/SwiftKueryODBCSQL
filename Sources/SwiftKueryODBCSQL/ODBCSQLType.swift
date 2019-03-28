@@ -7,7 +7,11 @@
 
 import Foundation
 
-enum ODBCSQLType: UInt32 {
+enum ODBCSQLType: Int16 {
+    
+    case SQL_TIME = -154
+    case SQL_BIT =  -7
+    case SQL_TIMESTAMP =  -2
     case SQL_UNKNOWN_TYPE =  0
     case SQL_CHAR =  1
     case SQL_NUMERIC =  2

@@ -172,6 +172,13 @@ private let MAX_DATA = 100
         //print("-- \(ourcol.Name) \(ourcol.Datatype)")
         switch ourcol.Datatype
         {
+        case .SQL_BIT:
+            if let data = String(data: data, encoding: .utf8)    {
+                if let somenum:Int32 = Int32(data) { return somenum == 1 }
+            }
+            return nil
+            
+            
         case .SQL_UNKNOWN_TYPE:
             fallthrough
         case .SQL_CHAR: // 1

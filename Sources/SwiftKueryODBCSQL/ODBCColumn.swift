@@ -11,7 +11,7 @@ public class ODBCColumn
 {
     init(_ Name:String, DataType:Int16, Colsize:UInt, Decimaldigits:Int16,Nullable:Bool )   {
         self.Name = Name
-        self.Datatype  = ODBCSQLType(rawValue: UInt32(DataType))!
+        self.Datatype  = ODBCSQLType(rawValue: DataType)!
         self.Colsize = Colsize
         self.Decimaldigts = Decimaldigits
         self.Nullable = Nullable
